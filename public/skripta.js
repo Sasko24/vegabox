@@ -49,4 +49,33 @@ window.addEventListener('/* tip dogodka */', function() {
             // Klici funkcijo ugasniCakanje()
         }
     };
-})
+
+    var brisi = function(event) {
+        // 1. Klici funkcijo prizgiCakanje()
+        // Koda gre sem... 
+
+        var xhttp = new XMLHttpRequest();
+
+        xhttp.onreadystatechange = function() {
+			if (xhttp.readyState == 4 && xhttp.status == 200) {
+
+                /** 2. Preveri da lastnost responseText objekta xhttp odgovarja "Datoteka izbrisana",
+                 *  v pozitivnem primeru preusmeri uporabnika na glavno stran (pomoč: window.location)
+                 *  sicer sproži alert s sporočilom, ki sporoči uporabniku, da ni moč zbrisati datoteko
+                 */
+				if (xhttp.responseText == "Datoteka izbrisana") {
+					window.location = /* Koda gre sem... */
+				} else {
+					// Koda gre sem...
+				}
+                // 3. Klici funkcijo ugasniCakanje()
+                // Koda gre sem...
+			}
+			
+		};
+        // 4. Poglej sintakso funkcije .open() ter podaj zahtevo strežniku tipa GET
+		xhttp.open("/* Koda gre sem */", "/brisi/"+this.getAttribute("datoteka"), true);
+		// 5. Pošlji zahtevo strežniku s funkcijo send() na objektu xhttp
+        // Koda gre sem...
+    }
+});
