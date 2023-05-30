@@ -8,26 +8,21 @@ var http = require('http');
 var fs = require('fs-extra');
 var util = require('util');
 var path = require('path');
+const { readdir } = require('fs');
 
 var dataDir = "./data/";
 
-// TODO 1.0 Za ustvarjen objekt, ki predstavlja strežnik, za posamezno tipologijo zahteve v url, kliči zaželjene funkcije.
 var streznik = http.createServer(function(zahteva, odgovor) {
     if (zahteva.url == '/') {
-        // TODO 1.1 Pokliči funkcijo posredujOsnovnoStran
-        // Koda gre sem...
+        posredujOsnovnoStran(odgovor);
     } else if (zahteva.url == '/datoteke') { 
-        // TODO 1.2 Pokliči funkcijo posredujSeznamDatotek
-        // Koda gre sem...
+        posredujSeznamDatotek(odgovor);
     } else if (zahteva.url == "/nalozi") {
-        // TODO 1.3 Pokliči funkcijo za naložitev datoteke naloziDatoteko
-        /* Koda gre sem...*/(zahteva, odgovor);
+        naloziDatoteko(zahteva, odgovor);
     } else if (zahteva.url.startsWith('/prenesi')) { 
-        // TODO 1.4 Pokliči funkcijo posredujStaticnoVsebino s podanimi vhodnimi parametri
-        /* Koda gre sem...*/(odgovor, dataDir + zahteva.url.replace("/prenesi", ""), "application/octet-stream");
+        posredujStaticnoVsebino(odgovor, dataDir + zahteva.url.replace("/prenesi", ""), "application/octet-stream");
     } else if (zahteva.url.startsWith('/brisi')) { 
-        // TODO 1.5 Pokliči funkcijo izbrisiDatoteko s podanimi vhodnimi parametri
-        /* Koda gre sem...*/(odgovor, dataDir + zahteva.url.replace("/brisi", ""));
+        izbrisiDatoteko(odgovor, dataDir + zahteva.url.replace("/brisi", ""));
     } else {
         posredujStaticnoVsebino(odgovor, './public' + zahteva.url, "");
     }
@@ -43,11 +38,10 @@ var streznik = http.createServer(function(zahteva, odgovor) {
  *  @param {mimeType} mimeType prazen niz "" ki predstavlja format MIME od zahtevane vsebine
  */
 function posredujOsnovnoStran(odgovor) {
-    posredujStaticnoVsebino(odgovor, '/* FIXME Dodaj absolutno pot do osnovne strani... */', "");
+    posredujStaticnoVsebino(odgovor, './public/vegabox.html', "");
 }
 
 
-// TODO 3.0 Beri iz seznama datotek dataDir ter za vsako vrni ime in velikost.
 /**
  *  Posreduje seznam datotek, ki se nahajajo v mapi data.
  *  
@@ -55,9 +49,9 @@ function posredujOsnovnoStran(odgovor) {
  */
 function posredujSeznamDatotek(odgovor) {
     odgovor.writeHead(200, {'Content-Type': 'application/json'});
-    /* FIXME Na istanci objekta fs kliči funkcijo readdir za branje datoteke... */(dataDir, function(napaka, datoteke) {
+    readdir(dataDir, function(napaka, datoteke) {
         if (napaka) {
-            // FIXME Posreduj napako...
+            return napaka;
         } else {
             var seznamDatotek = [];
             for (var i=0; i<datoteke.length; i++) {
@@ -66,7 +60,7 @@ function posredujSeznamDatotek(odgovor) {
                 seznamDatotek.push({datoteka: datoteka, velikost: velikost});
             }
             
-            odgovor.write(/* FIXME Na objektu JSON kliči funkcijo stringify z vhodnim parametrom seznamDatotek... */);
+            odgovor.write(JSON.stringify(seznamDatotek));
             odgovor.end();      
         }
     });
@@ -96,7 +90,7 @@ function naloziDatoteko(zahteva, odgovor) {
         var datoteka = this.openedFiles[0].name;
         fs.copy(zacasnaPot, dataDir + datoteka, function(napaka) {  
             if (napaka) {
-                // TODO 4.1 Posreduj napako...
+                return napaka;
             } else {
                 posredujOsnovnoStran(odgovor);        
             }
@@ -104,8 +98,6 @@ function naloziDatoteko(zahteva, odgovor) {
     });
 }
 
-
-// TODO 5.0 Dopolni vsebino spodnje funkcije za posredovanje zahtevane datoteke od strežnika.
 /**
  *  Posreduje zahtevano datoteko uporabniku, če ta obstaja na strežniku.
  * 
@@ -118,14 +110,13 @@ function posredujStaticnoVsebino(odgovor, absolutnaPotDoDatoteke, mimeType) {
         if (datotekaObstaja) {
             fs.readFile(absolutnaPotDoDatoteke, function(napaka, datotekaVsebina) {
                 if (napaka) {
-                    // TODO 5.1 Posreduj napako...
+                    return napaka;
                 } else {
-                    // TODO 5.2 Kliži funkcijo posredujDatoteko s podanimi vhodnimi parametri
-                    /* Koda gre sem */(odgovor, absolutnaPotDoDatoteke, datotekaVsebina, mimeType);
+                    posredujDatoteko(odgovor, absolutnaPotDoDatoteke, datotekaVsebina, mimeType);
                 }
             })
         } else {
-            // TODO 5.3 Posreduj napako...
+           return napaka;
         }
     });
 }
@@ -160,12 +151,11 @@ function posredujDatoteko(odgovor, datotekaPot, datotekaVsebina, mimeType) {
 function izbrisiDatoteko(odgovor, absolutnaPotDoDatoteke) {
     fs.exists(absolutnaPotDoDatoteke, function(datotekaObstaja) {
         if(datotekaObstaja) {
-            // TODO 6.1 kliči funkcijo remove na objektu fs s podanimi vhodnimi parametri.
             fs.remove(absolutnaPotDoDatoteke, function(napaka) {
                 if(!napaka) {
                     alert("Datoteka je bila izbrisana iz seznama.");
                 } else {
-                    // TODO 6.2 Posreduj napako...
+                   return napaka;
                 }
             });
         }
